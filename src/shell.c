@@ -1,0 +1,90 @@
+#include "../include/defs.h"
+#include "../include/stdio.h"
+#include "../include/kc.h"
+#include "../include/commands.h"
+#include "../include/strlib.h"
+
+#define	CMD_SIZE			10
+
+void 			cmd_interpreter(char * cmd, char * args);
+void 			clean_args(void);
+void			clean_buffer(SHELL*);
+void			print_logo(void);
+void			repaint_screen(void);
+
+extern SHELL*	current_shell;
+extern SHELL	shells[MAX_SHELLS];
+extern BUFFER	focus_buf;
+extern int		current_shell_index;
+
+char 			line[MAX_LINE], cmd[MAX_LINE], args[MAX_LINE];
+void 			(*execute_lst[])(char *) = 
+								{&echo_exec, &language_exec,
+								&test_exec, &help_exec, &idt_exec, 
+								&prime_exec, &malloc_exec, &free_exec, 
+								&memory_exec};
+										
+char			read_serial(void);
+void			write_serial(char);
+char *			cmd_lst[CMD_SIZE] = {"echo", "language", "test", 
+									"help", "idt", "prime", "malloc", 
+									"free", "mem"};
+
+void run_shell() 
+{
+	char c;
+	
+	clean_buffer(current_shell);
+
+	while ((c = getc()) != '\n')
+		putchar(c);	
+	
+	putc(c);
+	
+	sscanf(current_shell->line_buffer,"%s%S", cmd, args);
+	if (cmd[0] != 0) 
+	{
+		cmd_interpreter(cmd, args);
+		putc('\n');
+	}
+	
+	print_logo();
+	
+	clean_args();
+}
+
+void print_logo()
+{
+	printf("tpeARQ:$>");
+}
+
+void select_shell(int shell_index)
+{
+	current_shell = &(shells[shell_index]);
+	current_shell_index = shell_index;
+	repaint_screen();
+}
+
+void cmd_interpreter(char * cmd, char * args)
+{
+	int i = 0;
+
+	while (strcmp(cmd, cmd_lst[i++]))
+	{
+		if (i == CMD_SIZE)
+		{
+			printf("\'%s\': Command not found", cmd);
+			return;
+		}
+	}
+	--i;
+
+	(*execute_lst[i])(args);
+}
+
+void clean_args()
+{
+	int i;
+	for (i = 0; i < MAX_LINE; i++)
+		args[i] = cmd[i] = line[i] = 0;
+}

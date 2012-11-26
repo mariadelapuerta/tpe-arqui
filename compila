@@ -1,0 +1,19 @@
+cd ./bin
+rm -rf *
+nasm -f aout ../src/libasm.asm -o libasm.o
+nasm -f aout ../src/kstart.asm -o kstart.o
+nasm -f aout ../src/loader.asm -o kstart.o
+gcc -c ../src/kernel.c -o kernel.o -fno-builtin -m32 -march=i386
+gcc -c ../src/libc.c  -o libc.o -fno-builtin -m32 -march=i386
+gcc -c ../src/int/int_09.c  -o int_09.o -fno-builtin -m32 -march=i386
+gcc -c ../src/int/int_80.c  -o int_80.o -fno-builtin -m32 -march=i386
+gcc -c ../src/int/int_generic.c  -o int_generic.o -fno-builtin -m32 -march=i386
+gcc -c ../src/shell.c  -o shell.o -fno-builtin -m32 -march=i386
+gcc -c ../src/buffer.c  -o buffer.o -fno-builtin -m32 -march=i386
+gcc -c ../src/stdio.c  -o stdio.o -fno-builtin -m32 -march=i386
+gcc -c ../src/strlib.c  -o strlib.o -fno-builtin -m32 -march=i386
+gcc -c ../src/commands.c  -o commands.o -fno-builtin -m32 -march=i386
+ld -T ../src/link.ld -o kernel.bin kernel.o kstart.o libc.o libasm.o \
+						int_09.o int_80.o int_generic.o shell.o buffer.o \
+						stdio.o strlib.o commands.o \
+						-m elf_i386

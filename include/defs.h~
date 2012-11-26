@@ -1,0 +1,94 @@
+/***************************************************
+  Defs.h
+	
+****************************************************/
+
+#ifndef _defs_
+#define _defs_
+
+#define byte 			unsigned char
+#define word 			short int
+#define dword 			int
+#define true			1
+#define	false			0
+
+#define	SCREEN_SIZE 	4000
+#define	BUFFER_SIZE		1024
+#define	MAX_SHELLS		10
+#define MAX_LINE		256
+
+#define READ	 			0x0
+#define WRITE 				0x1
+#define WRITE_ON_SCREEN		0x2
+#define READCH				0x3
+
+#define NULL		(void *) 0x0
+
+/* Flags para derechos de acceso de los segmentos */
+#define ACS_PRESENT     0x80            /* segmento presente en memoria */
+#define ACS_CSEG        0x18            /* segmento de codigo */
+#define ACS_DSEG        0x10            /* segmento de datos */
+#define ACS_READ        0x02            /* segmento de lectura */
+#define ACS_WRITE       0x02            /* segmento de escritura */
+#define ACS_IDT         ACS_DSEG
+#define ACS_INT_386 	0x0E		/* Interrupt GATE 32 bits */
+#define ACS_INT         ( ACS_PRESENT | ACS_INT_386 )
+
+#define	VID_MEM			0xb8000
+#define ACS_CODE        (ACS_PRESENT | ACS_CSEG | ACS_READ)
+#define ACS_DATA        (ACS_PRESENT | ACS_DSEG | ACS_WRITE)
+#define ACS_STACK       (ACS_PRESENT | ACS_DSEG | ACS_WRITE)
+
+
+#include "./buffer.h"
+
+#pragma pack (1) 		/* Alinear las siguiente estructuras a 1 byte */
+
+/* Descriptor de segmento */
+typedef struct {
+  word limit,
+       base_l;
+  byte base_m,
+       access,
+       attribs,
+       base_h;
+} DESCR_SEG;
+
+
+/* Descriptor de interrupcion */
+typedef struct {
+  word      offset_l,
+            selector;
+  byte      cero,
+            access;
+  word	    offset_h;
+} DESCR_INT;
+
+/* IDTR  */
+typedef struct {
+	word  	limit;
+	dword 	base;
+} IDTR;
+
+typedef struct {
+	byte	buf_p[BUFFER_SIZE];
+	int		write_offset,
+			read_offset,
+			key_stroke;
+} BUFFER;     
+
+typedef struct {
+	char	screen[SCREEN_SIZE],
+			line_buffer[MAX_LINE];
+	int		cursor,
+			lbuf_offset,
+			current_line;
+} SHELL;
+
+typedef struct {
+	void * 	address;
+	int 	size;
+	char 	free;
+} memblock;
+#endif
+

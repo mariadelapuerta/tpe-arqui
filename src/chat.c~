@@ -1,0 +1,96 @@
+#include "../include/serial.h"
+#include "../include/defs.h"
+#include "../include/kc.h"
+
+#define CLEAN_BUF	int k;for (k = 0; k < 256; k++) \
+					receive_buffer[k] = 0;
+
+byte 	get_received_char(void);
+void 	send_message(char * msg);
+
+extern SHELL * current_shell;
+
+char receive_buffer[256];
+byte received_char = -1;
+int chat_running = 0;
+
+int j = 0;
+int message_received = 0;
+int sending = 0;
+
+void run_chat()
+{
+	char c, i = 0;
+	chat_running = 1;
+	clean_buffer(current_shell);
+	while (chat_running)
+	{
+		if ((c = getc()) != '\n')
+			_Putchar(c);
+		else
+		{
+			if (strcmp(current_shell->line_buffer, "end chat"))
+			{
+				putc('\n');
+				send_message(current_shell->line_buffer);
+				putc('\n');
+				printf("Message \"%s\" sent!", 
+						current_shell->line_buffer);
+				putc('\n');
+				putc('\n');
+				clean_buffer(current_shell);
+				if (message_received)
+				{
+					printf("Recibio: %s", receive_buffer);
+					CLEAN_BUF;
+					message_received = 0;
+					putc('\n');
+					putc('\n');
+				}
+				i = 0;
+			}
+			else
+				chat_running = 0;
+			
+		}
+	}
+}
+
+void receive_message(){
+  
+  
+      if (received_char != -1)
+      {
+		      receive_buffer[j++] = received_char;
+		      received_char = -1;
+      }
+      else
+      {
+	      if (j)
+	      {
+		      message_received = 1;
+		      j = 0;
+	      }
+      } 
+}
+
+void send_message(char * msg)
+{
+	int i = 0;
+	sending = 1;
+	while (msg[i])
+	{
+		write_serial(msg[i]);
+		i++;
+	}
+	write_serial(0);
+	sending = 0;
+}
+
+byte get_received_char()
+{
+	byte ch = received_char;
+	if (received_char != -1)
+		received_char = 0;
+	return ch;
+}

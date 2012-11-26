@@ -1,0 +1,5 @@
+./compila
+cd ./bin
+sudo mount ../img/tpe.img ../aux -o loop
+sudo cp kernel.bin ../aux/boot
+sudo umount ../aux
